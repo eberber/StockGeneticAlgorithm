@@ -27,10 +27,10 @@ def initializeChromosome():
         randNumber = round(randNumber,2)
         
         randNumber2 = np.random.normal(mean, standardDeviation)
-        randNumber2 = round(randNumber,2)
+        randNumber2 = round(randNumber2,2)
 
         if counter == 0:
-            if randNumber <= randNumber2:
+            if randNumber < randNumber2:
                 firstDayLeftValue = randNumber
                 firstDayRightValue = randNumber2
             else:
