@@ -62,71 +62,69 @@ def initializeChromosome():
     chromosome.append(nextDayLeftValue)
     chromosome.append(nextDayRightValue)
     chromosome.append(recommendationValue)
-    for i in chromosome:
-        print(i)
+    print(chromosome)
     return chromosome
 
-def fitnesScore(fileList = [], chromosome=[]):
-    score = 0.0
+def validateStockData(noMatch, score, stockValue = [], chromosome = []):
     length = len(chromosome)
-    noMatch = 0
+    counter = 0
     flag = False
-    scoreFlag = False
 
-    print("chromosome: ", chromosome)
+    for x in stockValue:
+        #iterate through chromosome
+        for y in range(length):
+            #we only want to check two values of chromo against the stock value at a time
+            if counter == 2:
+                break
+            else:
+                #make sure to stay in bounds
+                if (y*2) + 1 <= length -1:
+                    #all values of the list except for the last one, need to satisfy the range
+                    if chromosome[y*2] <= x <= chromosome[((y*2) + 1)]:
+                        #if counter= 1 then the first value of the stock data satisfy chromo curr day
+                        if counter == 1:
+                            #data is within range so we check if buy or short
+                            if chromosome[-1] == 1:
+                                score += stockValue[-1]
+                                break
+                            else:
+                                #if you sell stock, then you lost money if the last value was positive in 
+                                #the stockData list since you sold at a lower cost
+                                #if you profit when you buy, you lose when you sell
+                                score += (stockValue[-1] * -1)
+                                break
+                        else:
+                            break
+                    #if any value is not within that range skip this list
+                    else:
+                        noMatch +=1
+                        flag = True
+                        return noMatch, score, flag
+                else:
+                    break
+        counter += 1
+    return noMatch, score, flag
+
+def fitnesScore(fileList = [], chromosome=[]):
+    tempScore = 0.0
+    score = 0.0
+    tempNoMatch = 0
+    noMatch = 0
+
     #iterate through single list of lists
     for i in fileList:
-         #iterate through that single lists values
-        flag= False
-        scoreFlag = False
-        counter = 0
-        for x in i:
-            #iterate through chromosome
-            for y in range(length):
-                #we only want to check two values of chromo against the stock value at a time
-                if counter == 2:
-                    break
-                else:
-                    #make sure to stay in bounds
-                    if (y*2) + 1 <= length -1:
-                        #all values of the list except for the last one, need to satisfy the range
-                        if chromosome[y*2] <= x <= chromosome[((y*2) + 1)]:
-                            if counter == 1:
-                                #data is within range so we check if buy or short
-                                if chromosome[-1] == 1:
-                                    score += i[-1]
-                                    scoreFlag = True
-                                    break
-                                else:
-                                    #if you sell stock, then you lost money if the last value was positive in 
-                                    #the stockData list since you sold at a lower cost
-                                    #if you profit when you buy, you lose when you sell
-                                    score += (i[-1] * -1)
-                                    scoreFlag = True
-                                    break
-                            else:
-                                break
-                        #if any value is not within that range skip this list
-                        else:
-                            noMatch +=1
-                            flag = True
-                            break
-                    else:
-                        break
-            counter += 1
-            #TODO: fix logic for below if
-            if flag != True or scoreFlag != True:
-                continue
-            else:
-                break
-        if scoreFlag != True:
-            continue
-        else:
-            break
+        tempNoMatch, tempScore, flag = validateStockData(tempNoMatch, tempScore, i, chromosome)
+        #make sure we dont add values that did not match conditions
+        if flag != True:
+            score += tempScore
+        tempScore = 0.0
+        noMatch += tempNoMatch
+        tempNoMatch = 0
+        
     if noMatch == len(fileList):
         #no stocks in our data matched our range for chromo, set default
         score = -5000 
-    print("score: ", score)
+    print("####     FITNESS SCORE    ####\n", score)
     return score
 
 def userInterface():
