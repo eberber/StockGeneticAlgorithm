@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import time
 ###################          GLOBALVARIABLES                #############################
 
 
@@ -56,7 +57,7 @@ def initializeChromosome():
     
     recommendationValue = fiftyPercentChance()
 
-    print("####    CHROMOSOME     ####")
+    print("####    CHROMOSOME INITIALIZED     ####")
     chromosome.append(firstDayLeftValue)
     chromosome.append(firstDayRightValue)
     chromosome.append(nextDayLeftValue)
@@ -65,7 +66,7 @@ def initializeChromosome():
     print(chromosome)
     return chromosome
 
-def validateStockData(noMatch, score, stockValue = [], chromosome = []):
+def validateStockData(noMatch, score, stockList = [], chromosome = []):
     counter = 0
     flag = False
     stockIndex = 0
@@ -73,20 +74,18 @@ def validateStockData(noMatch, score, stockValue = [], chromosome = []):
     #iterate through chromosome, except last value
     for chromoIndex in range(2):
         #all values of the list except for the last one, need to satisfy the range
-        t = chromosome[((chromoIndex*2) + 1)]
-        print("HERE: ", t)
-        if chromosome[chromoIndex*2] <= stockValue[stockIndex] <= chromosome[((chromoIndex*2) + 1)]:
+        if chromosome[chromoIndex*2] <= stockList[stockIndex] <= chromosome[((chromoIndex*2) + 1)]:
             #if counter= 1 then the first value of the stock data satisfy chromo curr day
             if counter == 1:
                 #data is within range so we check if buy or short
                 if chromosome[-1] == 1:
-                    score += stockValue[-1]
+                    score += stockList[-1]
                     break
                 else:
                     #if you sell stock, then you lost money if the last value was positive in 
                     #the stockData list since you sold at a lower cost
                     #if you profit when you buy, you lose when you sell
-                    score += (stockValue[-1] * -1)
+                    score += (stockList[-1] * -1)
                     break
             else:
                 stockIndex = 1
@@ -99,51 +98,52 @@ def validateStockData(noMatch, score, stockValue = [], chromosome = []):
             return noMatch, score, flag
     return noMatch, score, flag
 
-def fitnesScore(fileList = [], chromosome=[]):
+def fitnesScore():
     tempScore = 0.0
     score = 0.0
     tempNoMatch = 0
     noMatch = 0
+    counter = 0  
 
-    #iterate through single list of lists
-    for i in fileList:
-        tempNoMatch, tempScore, flag = validateStockData(tempNoMatch, tempScore, i, chromosome)
-        #make sure we dont add values that did not match conditions
-        if flag != True:
-            score += tempScore
-        tempScore = 0.0
-        noMatch += tempNoMatch
-        tempNoMatch = 0
-        
-    if noMatch == len(fileList):
-        #no stocks in our data matched our range for chromo, set default
-        score = -5000 
-    print("####     FITNESS SCORE    ####\n", score)
-    return score
-
-def userInterface():
-    fileList = []
-    stock = []
-
-    print("Hello! Welcome to the chromosome fitness testing lab!\n")
-    print("Select a file containing the training data: ")
     #TODO: Dont hard code
+    #file = "genAlgData1.txt"
     file = "GA_debug.txt"
     print(file)
+
+    #create chromosome
+    chromosome =  initializeChromosome()   
+
     #open file
-    file = open(file)
-    f1 = file
-    for x in f1:
-        tempList = x.split()
-        stock = []
-        for y in tempList:
-            stock.append(int(y))
-        fileList.append(stock)
-    #created list of lists that contain our stock data per line
-    chromosome =  initializeChromosome()         
-    fitnesScore(fileList, chromosome)
+    with open(file, "r") as f:
+        for line in f:
+            # Now you have one line of text in the variable "line" and can
+            # Convert strings to floats   
+            stockList = [ float(x) for x in line.split() ] 
+            #iterate through single list of lists
+            tempNoMatch, tempScore, flag = validateStockData(tempNoMatch, tempScore, stockList, chromosome)
+            #make sure we dont add values that did not match conditions
+            if flag != True:
+                score += tempScore
+            tempScore = 0.0
+            noMatch += tempNoMatch
+            tempNoMatch = 0
+            counter += 1
+        
+    if noMatch == counter:
+        #no stocks in our data matched the total # of stocks we had, set default
+        score = -5000 
+    score = round(score, 3)
+    print("####     FITNESS SCORE    ####\n", score)
+
+def userInterface():    
+    print("Hello! Welcome to the chromosome fitness testing lab!\n")
+    print("Select a file containing the training data: ")
+    fitnesScore()
 
 if __name__ == '__main__':
+    start = time.time()
     userInterface()
+    end = time.time()
+    print("Completion Time: ", end-start)
     
     
