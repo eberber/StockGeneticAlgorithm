@@ -66,43 +66,37 @@ def initializeChromosome():
     return chromosome
 
 def validateStockData(noMatch, score, stockValue = [], chromosome = []):
-    length = len(chromosome)
     counter = 0
     flag = False
-
-    for x in stockValue:
-        #iterate through chromosome
-        for y in range(length):
-            #we only want to check two values of chromo against the stock value at a time
-            if counter == 2:
-                break
-            else:
-                #make sure to stay in bounds
-                if (y*2) + 1 <= length -1:
-                    #all values of the list except for the last one, need to satisfy the range
-                    if chromosome[y*2] <= x <= chromosome[((y*2) + 1)]:
-                        #if counter= 1 then the first value of the stock data satisfy chromo curr day
-                        if counter == 1:
-                            #data is within range so we check if buy or short
-                            if chromosome[-1] == 1:
-                                score += stockValue[-1]
-                                break
-                            else:
-                                #if you sell stock, then you lost money if the last value was positive in 
-                                #the stockData list since you sold at a lower cost
-                                #if you profit when you buy, you lose when you sell
-                                score += (stockValue[-1] * -1)
-                                break
-                        else:
-                            break
-                    #if any value is not within that range skip this list
-                    else:
-                        noMatch +=1
-                        flag = True
-                        return noMatch, score, flag
-                else:
+    stockIndex = 0
+    
+    #iterate through chromosome, except last value
+    for chromoIndex in range(2):
+        #all values of the list except for the last one, need to satisfy the range
+        t = chromosome[((chromoIndex*2) + 1)]
+        print("HERE: ", t)
+        if chromosome[chromoIndex*2] <= stockValue[stockIndex] <= chromosome[((chromoIndex*2) + 1)]:
+            #if counter= 1 then the first value of the stock data satisfy chromo curr day
+            if counter == 1:
+                #data is within range so we check if buy or short
+                if chromosome[-1] == 1:
+                    score += stockValue[-1]
                     break
-        counter += 1
+                else:
+                    #if you sell stock, then you lost money if the last value was positive in 
+                    #the stockData list since you sold at a lower cost
+                    #if you profit when you buy, you lose when you sell
+                    score += (stockValue[-1] * -1)
+                    break
+            else:
+                stockIndex = 1
+                counter += 1
+                continue
+        #if any value is not within that range skip this list
+        else:
+            noMatch +=1
+            flag = True
+            return noMatch, score, flag
     return noMatch, score, flag
 
 def fitnesScore(fileList = [], chromosome=[]):
