@@ -1,6 +1,8 @@
 import numpy as np
 import random
 import time
+import collections
+
 ###################          GLOBALVARIABLES                #############################
 
 
@@ -63,7 +65,7 @@ def initializeChromosome():
     chromosome.append(nextDayLeftValue)
     chromosome.append(nextDayRightValue)
     chromosome.append(recommendationValue)
-    print(chromosome)
+    print("     ",chromosome)
     return chromosome
 
 def validateStockData(noMatch, score, stockList = [], chromosome = []):
@@ -98,52 +100,73 @@ def validateStockData(noMatch, score, stockList = [], chromosome = []):
             return noMatch, score, flag
     return noMatch, score, flag
 
-def fitnesScore():
-    tempScore = 0.0
-    score = 0.0
-    tempNoMatch = 0
-    noMatch = 0
-    counter = 0  
+def fitnesScore(file, numChromosome):
+    scoredChromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
+    scoredChromosomeList = []
 
-    #TODO: Dont hard code
-    #file = "genAlgData1.txt"
-    file = "GA_debug.txt"
-    print(file)
+    for chromosomeNumber in range(numChromosome):
+        tempScore = 0.0
+        score = 0.0
+        tempNoMatch = 0
+        noMatch = 0
+        counter = 0  
 
-    #create chromosome
-    chromosome =  initializeChromosome()   
+        #create chromosome
+        chromosome =  initializeChromosome()   
 
-    #open file
-    with open(file, "r") as f:
-        for line in f:
-            # Now you have one line of text in the variable "line" and can
-            # Convert strings to floats   
-            stockList = [ float(x) for x in line.split() ] 
-            #iterate through single list of lists
-            tempNoMatch, tempScore, flag = validateStockData(tempNoMatch, tempScore, stockList, chromosome)
-            #make sure we dont add values that did not match conditions
-            if flag != True:
-                score += tempScore
-            tempScore = 0.0
-            noMatch += tempNoMatch
-            tempNoMatch = 0
-            counter += 1
-        
-    if noMatch == counter:
-        #no stocks in our data matched the total # of stocks we had, set default
-        score = -5000 
-    score = round(score, 3)
-    print("####     FITNESS SCORE    ####\n", score)
+        #open file
+        with open(file, "r") as f:
+            for line in f:
+                # Now you have one line of text in the variable "line" and can
+                # Convert strings to floats   
+                stockList = [ float(x) for x in line.split() ] 
+                #iterate through single list of lists
+                tempNoMatch, tempScore, flag = validateStockData(tempNoMatch, tempScore, stockList, chromosome)
+                #make sure we dont add values that did not match conditions
+                if flag != True:
+                    score += tempScore
+                tempScore = 0.0
+                noMatch += tempNoMatch
+                tempNoMatch = 0
+                counter += 1
+            
+        if noMatch == counter:
+            #no stocks in our data matched the total # of stocks we had, set default
+            score = -5000 
+        score = round(score, 3)
+        print("       ####     FITNESS SCORE    ####\n                  ", score)
+        #package chromosomes into list of tuples
+        scoredChromosomeList.append(scoredChromosome(chromosome, score))
 
 def userInterface():    
     print("Hello! Welcome to the chromosome fitness testing lab!\n")
-    print("Select a file containing the training data: ")
-    fitnesScore()
+    ''' try:
+        print("Select a file containing the training data: ")
+        file = input()
+    except:
+        print("Error opening,", file ,",try again \n") '''
+    
+    while True:
+        print("How many chromosome to make: ")
+        numChromosome = input()
+        if (numChromosome.isdigit()):
+            numChromosome = int(numChromosome)
+            break
+        else:
+             print("Not an integer! Try again \n")
 
+    #TODO: Dont hard code
+    file = "genAlgData1.txt"
+    #file = "GA_debug.txt"
+    print(file)
+    fitnesScore(file, numChromosome)
+
+
+###################          MAIN                #############################
 if __name__ == '__main__':
     start = time.time()
     userInterface()
     end = time.time()
-    print("Completion Time: ", end-start)
+    print("Completion Time In Seconds: ", round(end-start, 3))
     
     
