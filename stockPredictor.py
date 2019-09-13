@@ -2,7 +2,7 @@ import numpy as np
 import random
 import time
 import collections
-
+import math
 ###################          GLOBALVARIABLES                #############################
 
 
@@ -59,13 +59,13 @@ def initializeChromosome():
     
     recommendationValue = fiftyPercentChance()
 
-    print("####    CHROMOSOME INITIALIZED     ####")
+    #print("####    CHROMOSOME INITIALIZED     ####")
     chromosome.append(firstDayLeftValue)
     chromosome.append(firstDayRightValue)
     chromosome.append(nextDayLeftValue)
     chromosome.append(nextDayRightValue)
     chromosome.append(recommendationValue)
-    print("     ",chromosome)
+    #print("     ",chromosome)
     return chromosome
 
 def validateStockData(noMatch, score, stockList = [], chromosome = []):
@@ -100,11 +100,19 @@ def validateStockData(noMatch, score, stockList = [], chromosome = []):
             return noMatch, score, flag
     return noMatch, score, flag
 
-def fitnesScore(file, numChromosome):
+def selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo):
+    if selectionAlgo == 0:
+        print("Starting Elitist \n")
+
+    elif selectionAlgo == 1:
+        print("Starting Tournament \n")
+
+
+def fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo):
     scoredChromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
     scoredChromosomeList = []
 
-    for chromosomeNumber in range(numChromosome):
+    for chromosomeNumber in range(populationSize):
         tempScore = 0.0
         score = 0.0
         tempNoMatch = 0
@@ -134,9 +142,18 @@ def fitnesScore(file, numChromosome):
             #no stocks in our data matched the total # of stocks we had, set default
             score = -5000 
         score = round(score, 3)
-        print("       ####     FITNESS SCORE    ####\n                  ", score)
+        #print("       ####     FITNESS SCORE    ####\n                  ", score)
         #package chromosomes into list of tuples
         scoredChromosomeList.append(scoredChromosome(chromosome, score))
+    #TODO: Quicksort list based on fitness score
+    #pass current generation and percent to be chosen
+    selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo)
+    
+def generatePopulations(populationSize, percentSelection):
+    percentSelection = percentSelection/100
+    populationUsingSelection = math.floor(populationSize * percentSelection)
+    populationUsingCrossover = populationSize - populationUsingSelection
+    return populationUsingSelection, populationUsingCrossover
 
 def userInterface():    
     print("Hello! Welcome to the chromosome fitness testing lab!\n")
@@ -147,26 +164,49 @@ def userInterface():
         print("Error opening,", file ,",try again \n") '''
     
     while True:
-        print("How many chromosome to make: ")
-        numChromosome = input()
-        if (numChromosome.isdigit()):
-            numChromosome = int(numChromosome)
+        print("Number of chromosome per generation: ")
+        populationSize = input()
+        if (populationSize.isdigit()):
+            populationSize = int(populationSize)
             break
         else:
-             print("Not an integer! Try again \n")
+            print("Not an integer! Try again \n")
+
+    while True:
+        print("Percent of population to use selection on as integer (ex: 40% = 40), remainder will be created using crossover: \n")
+        percentSelection = input()
+        if (percentSelection.isdigit()):
+            percentSelection = int(percentSelection)
+            if percentSelection > 100:
+                print("Percent chose cannot be greater than 100%. \n")
+            else:
+                populationUsingSelection, populationUsingCrossover = generatePopulations(populationSize, percentSelection)
+                break
+        else:
+            print("Not an integer! Try again \n")
+
+    while True:
+        print("Elitist: 0 \nTournament: 1")
+        selectionAlgo = input()
+        if (selectionAlgo.isdigit()):
+            selectionAlgo = int(selectionAlgo)
+            break
+        else:
+            print("Not an integer! Try again \n")
 
     #TODO: Dont hard code
     file = "genAlgData1.txt"
     #file = "GA_debug.txt"
     print(file)
-    fitnesScore(file, numChromosome)
+    start = time.time()
+    fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo)
+    end = time.time()
+    print("Completion Time In Seconds: ", round(end-start, 3))
 
 
 ###################          MAIN                #############################
 if __name__ == '__main__':
-    start = time.time()
     userInterface()
-    end = time.time()
-    print("Completion Time In Seconds: ", round(end-start, 3))
+
     
     
