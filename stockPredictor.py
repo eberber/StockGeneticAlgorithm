@@ -7,8 +7,57 @@ import math
 
 
 ###################          FUNCTIONS                #############################
+
+#randomly select two chromosomes from the current generation and whichever one has a higher fitness score will be copied
+#into the next generation. You do not need to prevent chromosomes from being selected more than once.
+def tournamentSort(populationUsingSelection, scoredChromosomeList):
+    tournamentList = []
+    for x in range(populationUsingSelection):
+        chrom1 = random.randint(0, len(scoredChromosomeList) - 1)
+        chrom2 = random.randint(0, len(scoredChromosomeList) - 1)
+        
+        if scoredChromosomeList[chrom1][1] > scoredChromosomeList[chrom2][1]:
+            tournamentList.append(scoredChromosomeList[chrom1])
+        elif scoredChromosomeList[chrom1][1] < scoredChromosomeList[chrom2][1]:
+            tournamentList.append(scoredChromosomeList[chrom2])
+        else:
+            tournamentList.append(scoredChromosomeList[chrom1])
+    return tournamentList
+
+def findMin(populationUsingSelection, elitistList = []):
+    minValue = elitistList[0][1]
+    minIndex = 0
+    for x in range(1, populationUsingSelection):
+        #find smallest value in new list
+        if elitistList[x][1] < minValue:
+            minValue = elitistList[x][1]
+            minIndex = x
+    return minIndex, minValue
+
+#select x highest fit chromosomes
+def selectionSort(populationUsingSelection, scoredChromosomeList = []):
+    elitistList = []
+    minValue = scoredChromosomeList[0][1]
+    minIndex = 0
+    lengthScoreChromoList = len(scoredChromosomeList)
+    #prefill elite list
+    for x in range(populationUsingSelection):
+        elitistList.append(scoredChromosomeList[x])
+        #find smallest value in new list
+        if elitistList[x][1] < minValue:
+            minValue = elitistList[x][1]
+            minIndex = x
+    for y in range(populationUsingSelection, lengthScoreChromoList):
+        if scoredChromosomeList[y][1] > minValue:
+            #swap the new smallest value
+            elitistList[minIndex] = scoredChromosomeList[y]
+            if y < lengthScoreChromoList:
+                minIndex, minValue = findMin(populationUsingSelection, elitistList)
+    return elitistList
+
+
 def fiftyPercentChance():
-    chance = random.randint(1,100)
+    chance = random.randint(1, 100)
 
     if chance <= 50:
         return 0
@@ -101,12 +150,16 @@ def validateStockData(noMatch, score, stockList = [], chromosome = []):
     return noMatch, score, flag
 
 def selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo):
+    nextGenList = []
     if selectionAlgo == 0:
         print("Starting Elitist \n")
+        nextGenList = selectionSort(populationUsingSelection, scoredChromosomeList)
 
     elif selectionAlgo == 1:
         print("Starting Tournament \n")
-
+        nextGenList = tournamentSort(populationUsingSelection, scoredChromosomeList)
+    print(nextGenList)
+    return nextGenList
 
 def fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo):
     scoredChromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
@@ -145,7 +198,6 @@ def fitnesScore(file, populationSize, populationUsingSelection, populationUsingC
         #print("       ####     FITNESS SCORE    ####\n                  ", score)
         #package chromosomes into list of tuples
         scoredChromosomeList.append(scoredChromosome(chromosome, score))
-    #TODO: Quicksort list based on fitness score
     #pass current generation and percent to be chosen
     selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo)
     
@@ -190,14 +242,17 @@ def userInterface():
         selectionAlgo = input()
         if (selectionAlgo.isdigit()):
             selectionAlgo = int(selectionAlgo)
-            break
+            if selectionAlgo != 0 and selectionAlgo != 1:
+                print("Select 0 or 1. Try again \n")
+            else:
+                break
         else:
             print("Not an integer! Try again \n")
 
     #TODO: Dont hard code
     file = "genAlgData1.txt"
     #file = "GA_debug.txt"
-    print(file)
+    #print(file)
     start = time.time()
     fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo)
     end = time.time()
