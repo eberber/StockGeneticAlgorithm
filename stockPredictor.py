@@ -90,7 +90,7 @@ def uniform(selectionList):
     parent2 = random.randint(0, len(selectionList) - 1)
 
     for i in range(5):
-        chance = fiftyPercentChance()
+        chance = percentChance(50)
         if i != 4:
             if chance == 0:
                 childList.append(selectionList[parent1][0][i])
@@ -107,6 +107,7 @@ def uniform(selectionList):
             childList[j * 2] = childList[j * 2] + childList[(j*2) + 1]
             childList[(j * 2) + 1] = childList[j * 2] - childList[(j * 2) + 1]
             childList[j * 2] = childList[j * 2] - childList[(j * 2) + 1]
+            childList[j * 2] = round(childList[j * 2], 2)
 
     return childChromosome(childList, score)
 #Take the first 2 genes from the first parent chromosome and the last 3 genes from the second parent chromosome to form a child chromosome. 
@@ -126,7 +127,33 @@ def kPoint(selectionList):
     return childChromosome(childList, score)
 
 ###################          MUTATION                #############################
-#def mutation():
+#Once the new chromosomes have been created, you should iterate over each gene in each one of them and with a Z% probability, trigger a mutation
+def mutation(mutationProbability, newGeneration):
+    lengthNewGenList = len(newGeneration)
+    for i in range(lengthNewGenList):
+        for j in range(5):
+            chance = percentChance(mutationProbability)
+            if j < 4:
+                if chance == 0:
+                    continue
+                else:
+                    #mutation occured, create new rand gene
+                    randNumber = randNumpyNumber()
+                    newGeneration[i][0][j] = round(randNumber, 2)
+            else:
+                if chance == 0:
+                    continue
+                else:
+                    newGeneration[i][0][4] = percentChance(50)
+        #reorganize list
+        for j in range(2):
+            if newGeneration[i][0][j * 2] > newGeneration[i][0][(j * 2) + 1]:
+                newGeneration[i][0][j * 2] = newGeneration[i][0][j * 2] + newGeneration[i][0][(j*2) + 1]
+                newGeneration[i][0][(j * 2) + 1] = newGeneration[i][0][j * 2] - newGeneration[i][0][(j * 2) + 1]
+                newGeneration[i][0][j * 2] = newGeneration[i][0][j * 2] - newGeneration[i][0][(j * 2) + 1]
+                newGeneration[i][0][j * 2] = round(newGeneration[i][0][j * 2] , 2)
+    return newGeneration
+
 
 ###################          INITIALIZATION                #############################
 def userInterface():    
@@ -151,8 +178,8 @@ def userInterface():
         percentSelection = input()
         if (percentSelection.isdigit()):
             percentSelection = int(percentSelection)
-            if percentSelection > 100:
-                print("Percent chose cannot be greater than 100%. \n")
+            if percentSelection > 99 or percentSelection < 0:
+                print("Percent chose cannot be greater than or equal to 100% or less than 0%. \n")
             else:
                 populationUsingSelection, populationUsingCrossover = generatePopulations(populationSize, percentSelection)
                 break
@@ -172,7 +199,7 @@ def userInterface():
             print("Not an integer! Try again \n")
     
     while True:
-        print("Uniform: 0 \n K-Point: 1")
+        print("Uniform: 0 \nK-Point: 1")
         crossOverAlgo = input()
         if (crossOverAlgo.isdigit()):
             crossOverAlgo = int(crossOverAlgo)
@@ -182,12 +209,26 @@ def userInterface():
                 break
         else:
             print("Not an integer! Try again \n")
+
+    while True:
+        print("Probability percent to cause mutation as integer (ex: 40% = 40): \n")
+        mutationProbability = input()
+        if (mutationProbability.isdigit()):
+            mutationProbability = int(mutationProbability)
+            if mutationProbability > 100 or mutationProbability < 0:
+                print("Percent chose cannot be greater than 100% or less than 0%. \n")
+            else:
+                break
+        else:
+            print("Not an integer! Try again \n")
+
     #TODO: Dont hard code
     file = "genAlgData1.txt"
     #file = "GA_debug.txt"
     #print(file)
     start = time.time()
-    fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo, crossOverAlgo)
+    newGeneration = fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo, crossOverAlgo)
+    newGeneration = mutation(mutationProbability, newGeneration)
     end = time.time()
     print("Completion Time In Seconds: ", round(end-start, 3))
 
@@ -197,12 +238,12 @@ def generatePopulations(populationSize, percentSelection):
     populationUsingCrossover = populationSize - populationUsingSelection
     return populationUsingSelection, populationUsingCrossover
 
-def fiftyPercentChance():
-    chance = random.randint(1, 100)
+def percentChance(probabilityValue):
+    chance = random.randint(0, 100)
 
-    if chance <= 50:
+    if chance <= probabilityValue:
         return 0
-    elif chance >= 51:
+    elif chance >= probabilityValue + 1:
         return 1
 
 def randNumpyNumber():
@@ -240,7 +281,7 @@ def initializeChromosome():
                 chromosome.append(randNumber2)
                 chromosome.append(randNumber)    
         else:
-            recommendationValue = fiftyPercentChance()
+            recommendationValue = percentChance(50)
             chromosome.append(recommendationValue)
 
     return chromosome
@@ -316,6 +357,7 @@ def fitnesScore(file, populationSize, populationUsingSelection, populationUsingC
         scoredChromosomeList.append(scoredChromosome(chromosome, score))
     #pass current generation and percent to be chosen
     scoredChromosomeList = selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo, crossOverAlgo)
+    return scoredChromosomeList
 
 ###################          MAIN                #############################
 if __name__ == '__main__':
