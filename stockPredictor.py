@@ -3,10 +3,7 @@ import random
 import time
 import collections
 import math
-###################          GLOBALVARIABLES                #############################
 
-
-###################          FUNCTIONS                #############################
 ###################          SELECTION                #############################
 def selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo, crossOverAlgo):
     selectionList = []
@@ -30,7 +27,6 @@ def selection(populationUsingSelection, populationUsingCrossover, populationSize
             crossOverAlgo = kPoint(selectionList)
             selectionList.append(crossOverAlgo)
     return selectionList
-
 #randomly select two chromosomes from the current generation and whichever one has a higher fitness score will be copied
 #into the next generation. You do not need to prevent chromosomes from being selected more than once.
 def tournamentSort(populationUsingSelection, scoredChromosomeList):
@@ -46,32 +42,6 @@ def tournamentSort(populationUsingSelection, scoredChromosomeList):
         else:
             tournamentList.append(scoredChromosomeList[chrom1])
     return tournamentList
-
-
-def findMinOrMax(stopValue, minOrMax=0, listBeingChecked=[]):
-    smallValueToCompare = listBeingChecked[0][1]
-    largeValueToCompare = listBeingChecked[0][1]
-    minIndex = 0
-    maxIndex = 0
-    average = listBeingChecked[0][1]
-
-    for x in range(1, stopValue):
-        #find smallest value in new list
-        if listBeingChecked[x][1] < smallValueToCompare:
-            smallValueToCompare = listBeingChecked[x][1]
-            minIndex = x
-        #find largest value in new list
-        if listBeingChecked[x][1] > largeValueToCompare:
-            largeValueToCompare = listBeingChecked[x][1]
-            maxIndex = x    
-        average += listBeingChecked[x][1]
-    average = round(average / len(listBeingChecked), 2)
-    if minOrMax == 0:
-        return minIndex
-    elif minOrMax == 1:
-        return maxIndex
-    elif minOrMax == 2:
-        return minIndex, maxIndex, average
 
 #select x highest fit chromosomes
 def selectionSort(populationUsingSelection, scoredChromosomeList = []):
@@ -172,19 +142,18 @@ def mutation(mutationProbability, newGeneration):
             newGeneration[i][0][j * 2] = round(newGeneration[i][0][j * 2] , 2)
             newGeneration[i][0][(j * 2) + 1] = round(newGeneration[i][0][(j * 2) + 1] , 2)
     return newGeneration
-
-
 ###################          INITIALIZATION                #############################
 def userInterface():    
     print("Hello! Welcome to the chromosome fitness testing lab!\n")
-    ''' try:
+    try:
         print("Select a file containing the training data: ")
         file = input()
+        print("FILE: ", file)
     except:
-        print("Error opening,", file ,",try again \n") '''
+        print("Error opening,", file ,",try again \n")
     
     while True:
-        print("Number of generations: ")
+        print("\nNumber of generations: ")
         numGerations = input()
         if (numGerations.isdigit()):
             numGerations = int(numGerations)
@@ -193,7 +162,7 @@ def userInterface():
             print("Not an integer! Try again \n")    
 
     while True:
-        print("Number of chromosome per generation: ")
+        print("\nNumber of chromosome per generation: ")
         populationSize = input()
         if (populationSize.isdigit()):
             populationSize = int(populationSize)
@@ -202,7 +171,7 @@ def userInterface():
             print("Not an integer! Try again \n")
 
     while True:
-        print("Percent of population to use selection on as integer (ex: 40% = 40), remainder will be created using crossover: \n")
+        print("\nPercent of population to use selection on as integer (ex: 40% = 40), remainder will be created using crossover: ")
         percentSelection = input()
         if (percentSelection.isdigit()):
             percentSelection = int(percentSelection)
@@ -215,7 +184,7 @@ def userInterface():
             print("Not an integer! Try again \n")
 
     while True:
-        print("Elitist: 0 \nTournament: 1")
+        print("\nElitist: 0 \nTournament: 1")
         selectionAlgo = input()
         if (selectionAlgo.isdigit()):
             selectionAlgo = int(selectionAlgo)
@@ -227,7 +196,7 @@ def userInterface():
             print("Not an integer! Try again \n")
     
     while True:
-        print("Uniform: 0 \nK-Point: 1")
+        print("\nUniform: 0 \nK-Point: 1")
         crossOverAlgo = input()
         if (crossOverAlgo.isdigit()):
             crossOverAlgo = int(crossOverAlgo)
@@ -239,7 +208,7 @@ def userInterface():
             print("Not an integer! Try again \n")
 
     while True:
-        print("Probability percent to cause mutation as integer (ex: 40% = 40): \n")
+        print("\nProbability percent to cause mutation as integer (ex: 40% = 40): \n")
         mutationProbability = input()
         if (mutationProbability.isdigit()):
             mutationProbability = int(mutationProbability)
@@ -251,21 +220,17 @@ def userInterface():
             print("Not an integer! Try again \n")
 
     while True:
-        print("Percent of mutation rate change(ex: 40% mutation rate and -10% rate change = 30% for next gen): \n")
+        print("\nPercent of mutation rate change(ex: 40% mutation rate and -10% rate change = 30% for next gen): \n")
         mutationRateChange = input()
-        if (mutationRateChange.isdigit()):
+        try:
             mutationRateChange = int(mutationRateChange)
-            if mutationRateChange > 100 or mutationRateChange < 0:
-                print("Percent chose cannot be greater than 100% or less than 0%. \n")
+            if mutationRateChange > 100:
+                print("Percent chose cannot be greater than 100%.\n")
             else:
                 break
-        else:
-            print("Not an integer! Try again \n")
+        except:
+            print("Not an integer, try again.")
 
-    #TODO: Dont hard code
-    file = "genAlgData1.txt"
-    #file = "GA_debug.txt"
-    #print(file)
     newGeneration = []
     totalPopulation = []
     start = time.time()
@@ -280,10 +245,10 @@ def userInterface():
         totalPopulation.extend(newGeneration)
         checkEvery10Gens = (i+1) / 10
         if checkEvery10Gens % 1 == 0:
-            for j in totalPopulation: # uncomment to see chromosome lists
+            for j in totalPopulation:
                 print(j.chromosome , j.score)
             min, max, average = findMinOrMax(len(totalPopulation), 2, totalPopulation)
-            print("####################      10 ITERATIONS       ##############################")
+            print("####################      10 ITERATIONS CHECK      ##############################")
             print("Group: ", (i+1) / 10)
             print("Min Value: ", totalPopulation[min][1])
             print("Max Value: ", totalPopulation[max][1])
@@ -292,29 +257,7 @@ def userInterface():
 
     end = time.time()
     print("Completion Time In Seconds: ", round(end-start, 3))
-
-def generatePopulations(populationSize, percentSelection):
-    percentSelection = percentSelection/100
-    populationUsingSelection = math.floor(populationSize * percentSelection)
-    populationUsingCrossover = populationSize - populationUsingSelection
-    return populationUsingSelection, populationUsingCrossover
-
-def percentChance(probabilityValue):
-    chance = random.randint(0, 100)
-
-    if chance <= probabilityValue:
-        return 0
-    elif chance >= probabilityValue + 1:
-        return 1
-
-def randNumpyNumber():
-    mean = 0
-    standardDeviation = 1.15
-    np.random.seed
-
-    randNumber = np.random.normal(mean, standardDeviation)
-    return randNumber
-
+#creates chromsome gen 0
 def initializeChromosome():
     #left values must be smaller than right on their respective day: [currentDay1, currentDay2, nextDay, nextDay2, stockReccomendation]
     chromosome=[]
@@ -346,7 +289,7 @@ def initializeChromosome():
             chromosome.append(recommendationValue)
 
     return chromosome
-
+#check chromosome to see if its valid
 def validateStockData(noMatch, score, stockList = [], chromosome = []):
     counter = 0
     flag = False
@@ -378,7 +321,7 @@ def validateStockData(noMatch, score, stockList = [], chromosome = []):
             flag = True
             return noMatch, score, flag
     return noMatch, score, flag
-
+#compute fitness score
 def fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo, crossOverAlgo):
     scoredChromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
     scoredChromosomeList = []
@@ -399,7 +342,7 @@ def fitnesScore(file, populationSize, populationUsingSelection, populationUsingC
                 # Now you have one line of text in the variable "line" and can
                 # Convert strings to floats   
                 stockList = [ float(x) for x in line.split() ] 
-                #iterate through single list of lists
+                #iterate through single list
                 tempNoMatch, tempScore, flag = validateStockData(tempNoMatch, tempScore, stockList, chromosome)
                 #make sure we dont add values that did not match conditions
                 if flag != True:
@@ -419,6 +362,55 @@ def fitnesScore(file, populationSize, populationUsingSelection, populationUsingC
     #pass current generation and percent to be chosen
     scoredChromosomeList = selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo, crossOverAlgo)
     return scoredChromosomeList
+
+###################          HELPER FUNCTIONS                #############################
+#determine what number of chromosomes for selection and crossover
+def generatePopulations(populationSize, percentSelection):
+    percentSelection = percentSelection/100
+    populationUsingSelection = math.floor(populationSize * percentSelection)
+    populationUsingCrossover = populationSize - populationUsingSelection
+    return populationUsingSelection, populationUsingCrossover
+#probability funct based on value out of 100
+def percentChance(probabilityValue):
+    chance = random.randint(0, 100)
+
+    if chance <= probabilityValue:
+        return 0
+    elif chance >= probabilityValue + 1:
+        return 1
+#generates chromosome stock gene
+def randNumpyNumber():
+    mean = 0
+    standardDeviation = 1.15
+    np.random.seed
+
+    randNumber = np.random.normal(mean, standardDeviation)
+    return randNumber
+#finds max, min and avg values in given list
+def findMinOrMax(stopValue, minOrMax=0, listBeingChecked=[]):
+    smallValueToCompare = listBeingChecked[0][1]
+    largeValueToCompare = listBeingChecked[0][1]
+    minIndex = 0
+    maxIndex = 0
+    average = listBeingChecked[0][1]
+
+    for x in range(1, stopValue):
+        #find smallest value in new list
+        if listBeingChecked[x][1] < smallValueToCompare:
+            smallValueToCompare = listBeingChecked[x][1]
+            minIndex = x
+        #find largest value in new list
+        if listBeingChecked[x][1] > largeValueToCompare:
+            largeValueToCompare = listBeingChecked[x][1]
+            maxIndex = x    
+        average += listBeingChecked[x][1]
+    average = round(average / len(listBeingChecked), 2)
+    if minOrMax == 0:
+        return minIndex
+    elif minOrMax == 1:
+        return maxIndex
+    elif minOrMax == 2:
+        return minIndex, maxIndex, average
 
 ###################          MAIN                #############################
 if __name__ == '__main__':
