@@ -8,6 +8,28 @@ import math
 
 ###################          FUNCTIONS                #############################
 ###################          SELECTION                #############################
+def selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo, crossOverAlgo):
+    selectionList = []
+    chromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
+
+    if selectionAlgo == 0:
+        #print("Starting Elitist \n")
+        selectionList = selectionSort(populationUsingSelection, scoredChromosomeList)
+    elif selectionAlgo == 1:
+        #print("Starting Tournament \n")
+        selectionList = tournamentSort(populationUsingSelection, scoredChromosomeList)
+
+    if crossOverAlgo == 0:
+        #print("Starting Uniform \n")
+        for x in range(populationUsingCrossover):
+            chromosome = uniform(selectionList)
+            selectionList.append(chromosome)
+    elif crossOverAlgo == 1:
+        #print("Starting K-Point \n")
+        for x in range(populationUsingCrossover):
+            crossOverAlgo = kPoint(selectionList)
+            selectionList.append(crossOverAlgo)
+    return selectionList
 
 #randomly select two chromosomes from the current generation and whichever one has a higher fitness score will be copied
 #into the next generation. You do not need to prevent chromosomes from being selected more than once.
@@ -25,15 +47,31 @@ def tournamentSort(populationUsingSelection, scoredChromosomeList):
             tournamentList.append(scoredChromosomeList[chrom1])
     return tournamentList
 
-def findMin(populationUsingSelection, elitistList = []):
-    minValue = elitistList[0][1]
+
+def findMinOrMax(stopValue, minOrMax=0, listBeingChecked=[]):
+    smallValueToCompare = listBeingChecked[0][1]
+    largeValueToCompare = listBeingChecked[0][1]
     minIndex = 0
-    for x in range(1, populationUsingSelection):
+    maxIndex = 0
+    average = listBeingChecked[0][1]
+
+    for x in range(1, stopValue):
         #find smallest value in new list
-        if elitistList[x][1] < minValue:
-            minValue = elitistList[x][1]
+        if listBeingChecked[x][1] < smallValueToCompare:
+            smallValueToCompare = listBeingChecked[x][1]
             minIndex = x
-    return minIndex, minValue
+        #find largest value in new list
+        if listBeingChecked[x][1] > largeValueToCompare:
+            largeValueToCompare = listBeingChecked[x][1]
+            maxIndex = x    
+        average += listBeingChecked[x][1]
+    average = round(average / len(listBeingChecked), 2)
+    if minOrMax == 0:
+        return minIndex
+    elif minOrMax == 1:
+        return maxIndex
+    elif minOrMax == 2:
+        return minIndex, maxIndex, average
 
 #select x highest fit chromosomes
 def selectionSort(populationUsingSelection, scoredChromosomeList = []):
@@ -49,37 +87,15 @@ def selectionSort(populationUsingSelection, scoredChromosomeList = []):
             minValue = elitistList[x][1]
             minIndex = x
     for y in range(populationUsingSelection, lengthScoreChromoList):
-        if scoredChromosomeList[y][1] > minValue:
+        if scoredChromosomeList[y][1] > elitistList[minIndex][1]:
             #swap the new smallest value
             elitistList[minIndex] = scoredChromosomeList[y]
             if y < lengthScoreChromoList:
-                minIndex, minValue = findMin(populationUsingSelection, elitistList)
+                #fin new smallest value
+                minIndex = findMinOrMax(populationUsingSelection, 0 , elitistList)
     return elitistList
 
 ###################          CROSSOVER                #############################
-def selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo, crossOverAlgo):
-    selectionList = []
-    chromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
-
-    if selectionAlgo == 0:
-        print("Starting Elitist \n")
-        selectionList = selectionSort(populationUsingSelection, scoredChromosomeList)
-    elif selectionAlgo == 1:
-        print("Starting Tournament \n")
-        selectionList = tournamentSort(populationUsingSelection, scoredChromosomeList)
-
-    if crossOverAlgo == 0:
-        print("Starting Uniform \n")
-        for x in range(populationUsingCrossover):
-            chromosome = uniform(selectionList)
-            selectionList.append(chromosome)
-    elif crossOverAlgo == 1:
-        print("Starting K-Point \n")
-        for x in range(populationUsingCrossover):
-            crossOverAlgo = kPoint(selectionList)
-            selectionList.append(crossOverAlgo)
-    return selectionList
-
 #Iterate over each of the 5 genes and randomly select whether to use the value from the first parent chromosome or the second parent chromosome. 
 def uniform(selectionList):
     childChromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
@@ -91,23 +107,26 @@ def uniform(selectionList):
 
     for i in range(5):
         chance = percentChance(50)
+        #stock days
         if i != 4:
             if chance == 0:
                 childList.append(selectionList[parent1][0][i])
             elif chance == 1:
                 childList.append(selectionList[parent2][0][i])
+        #buy or sell
         else:
             if chance == 0:
-                score = round(selectionList[parent1][1], 2)
+                childList.append(chance)
             elif chance == 1:
-                score = round(selectionList[parent2][1], 2)
+                childList.append(chance)
     #organize list    
     for j in range(2):
         if childList[j * 2] > childList[(j * 2) + 1]:
             childList[j * 2] = childList[j * 2] + childList[(j*2) + 1]
             childList[(j * 2) + 1] = childList[j * 2] - childList[(j * 2) + 1]
             childList[j * 2] = childList[j * 2] - childList[(j * 2) + 1]
-            childList[j * 2] = round(childList[j * 2], 2)
+        childList[j * 2] =   round(childList[j * 2], 2)
+        childList[(j * 2) + 1] = round(childList[(j * 2) + 1], 2)
 
     return childChromosome(childList, score)
 #Take the first 2 genes from the first parent chromosome and the last 3 genes from the second parent chromosome to form a child chromosome. 
@@ -120,10 +139,9 @@ def kPoint(selectionList):
     for i in range(5):
         if i < 2:
             childList.append(selectionList[parent1][0][i])
-        elif i < 4:
+        elif i <= 4:
             childList.append(selectionList[parent2][0][i])
-        else:
-            score = childList.append(selectionList[parent2][1])
+    score = selectionList[parent1][1]
     return childChromosome(childList, score)
 
 ###################          MUTATION                #############################
@@ -151,7 +169,8 @@ def mutation(mutationProbability, newGeneration):
                 newGeneration[i][0][j * 2] = newGeneration[i][0][j * 2] + newGeneration[i][0][(j*2) + 1]
                 newGeneration[i][0][(j * 2) + 1] = newGeneration[i][0][j * 2] - newGeneration[i][0][(j * 2) + 1]
                 newGeneration[i][0][j * 2] = newGeneration[i][0][j * 2] - newGeneration[i][0][(j * 2) + 1]
-                newGeneration[i][0][j * 2] = round(newGeneration[i][0][j * 2] , 2)
+            newGeneration[i][0][j * 2] = round(newGeneration[i][0][j * 2] , 2)
+            newGeneration[i][0][(j * 2) + 1] = round(newGeneration[i][0][(j * 2) + 1] , 2)
     return newGeneration
 
 
@@ -164,6 +183,15 @@ def userInterface():
     except:
         print("Error opening,", file ,",try again \n") '''
     
+    while True:
+        print("Number of generations: ")
+        numGerations = input()
+        if (numGerations.isdigit()):
+            numGerations = int(numGerations)
+            break
+        else:
+            print("Not an integer! Try again \n")    
+
     while True:
         print("Number of chromosome per generation: ")
         populationSize = input()
@@ -222,13 +250,46 @@ def userInterface():
         else:
             print("Not an integer! Try again \n")
 
+    while True:
+        print("Percent of mutation rate change(ex: 40% mutation rate and -10% rate change = 30% for next gen): \n")
+        mutationRateChange = input()
+        if (mutationRateChange.isdigit()):
+            mutationRateChange = int(mutationRateChange)
+            if mutationRateChange > 100 or mutationRateChange < 0:
+                print("Percent chose cannot be greater than 100% or less than 0%. \n")
+            else:
+                break
+        else:
+            print("Not an integer! Try again \n")
+
     #TODO: Dont hard code
     file = "genAlgData1.txt"
     #file = "GA_debug.txt"
     #print(file)
+    newGeneration = []
+    totalPopulation = []
     start = time.time()
-    newGeneration = fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo, crossOverAlgo)
-    newGeneration = mutation(mutationProbability, newGeneration)
+    for i in range(numGerations):
+        newGeneration = fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo, crossOverAlgo)
+        newGeneration = mutation(mutationProbability, newGeneration)
+        if mutationProbability - mutationRateChange <= 0:
+            continue
+        else:
+            mutationProbability += mutationRateChange
+        print("Generation: ", i, " Mutation Rate: ", mutationProbability)
+        totalPopulation.extend(newGeneration)
+        checkEvery10Gens = (i+1) / 10
+        if checkEvery10Gens % 1 == 0:
+            for j in totalPopulation: # uncomment to see chromosome lists
+                print(j.chromosome , j.score)
+            min, max, average = findMinOrMax(len(totalPopulation), 2, totalPopulation)
+            print("####################      10 ITERATIONS       ##############################")
+            print("Group: ", (i+1) / 10)
+            print("Min Value: ", totalPopulation[min][1])
+            print("Max Value: ", totalPopulation[max][1])
+            print("Average Fitness Score: ", average)
+            print("############################################################################")
+
     end = time.time()
     print("Completion Time In Seconds: ", round(end-start, 3))
 
