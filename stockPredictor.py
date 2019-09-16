@@ -145,12 +145,16 @@ def mutation(mutationProbability, newGeneration):
 ###################          INITIALIZATION                #############################
 def userInterface():    
     print("Hello! Welcome to the chromosome fitness testing lab!\n")
-    try:
-        print("Select a file containing the training data: ")
-        file = input()
-        print("FILE: ", file)
-    except:
-        print("Error opening,", file ,",try again \n")
+    while True:
+        try:
+            print("Select file: ")
+            file = input()
+            f = file
+            f = open(file)
+            f.close()
+            break
+        except FileNotFoundError:
+            print('File does not exist')
     
     while True:
         print("\nNumber of generations: ")
@@ -237,8 +241,8 @@ def userInterface():
     for i in range(numGerations):
         newGeneration = fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo, crossOverAlgo)
         newGeneration = mutation(mutationProbability, newGeneration)
-        if mutationProbability - mutationRateChange <= 0:
-            continue
+        if (mutationProbability + mutationRateChange) <= 0:
+            pass
         else:
             mutationProbability += mutationRateChange
         print("Generation: ", i, " Mutation Rate: ", mutationProbability)
@@ -254,9 +258,10 @@ def userInterface():
             print("Max Value: ", totalPopulation[max][1])
             print("Average Fitness Score: ", average)
             print("############################################################################")
-
     end = time.time()
     print("Completion Time In Seconds: ", round(end-start, 3))
+    max = findMinOrMax(len(newGeneration), 1, newGeneration)
+    print("Fittest Chromosome from last population: ", newGeneration[max])
 #creates chromsome gen 0
 def initializeChromosome():
     #left values must be smaller than right on their respective day: [currentDay1, currentDay2, nextDay, nextDay2, stockReccomendation]
