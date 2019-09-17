@@ -170,7 +170,10 @@ def userInterface():
         populationSize = input()
         if (populationSize.isdigit()):
             populationSize = int(populationSize)
-            break
+            if(populationSize < 2):
+                print("Must have at least two chromosomes per generation.\n")
+            else:
+                break
         else:
             print("Not an integer! Try again \n")
 
@@ -179,8 +182,8 @@ def userInterface():
         percentSelection = input()
         if (percentSelection.isdigit()):
             percentSelection = int(percentSelection)
-            if percentSelection > 99 or percentSelection < 0:
-                print("Percent chose cannot be greater than or equal to 100% or less than 0%. \n")
+            if percentSelection > 100 or percentSelection < 0:
+                print("Percent chose cannot be greater than 100% or less than 0%. \n")
             else:
                 populationUsingSelection, populationUsingCrossover = generatePopulations(populationSize, percentSelection)
                 break
@@ -372,7 +375,7 @@ def fitnesScore(file, populationSize, populationUsingSelection, populationUsingC
 #determine what number of chromosomes for selection and crossover
 def generatePopulations(populationSize, percentSelection):
     percentSelection = percentSelection/100
-    populationUsingSelection = math.floor(populationSize * percentSelection)
+    populationUsingSelection = math.ceil(populationSize * percentSelection)
     populationUsingCrossover = populationSize - populationUsingSelection
     return populationUsingSelection, populationUsingCrossover
 #probability funct based on value out of 100
