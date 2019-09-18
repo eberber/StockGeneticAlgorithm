@@ -259,12 +259,11 @@ def userInterface():
             #for j in totalPopulation:
              #   print(j.chromosome , j.score)
             min, max, average = findMinOrMax(len(totalPopulation), 2, totalPopulation)
-            print("####################      10 ITERATIONS CHECK      ##############################")
+            print("############################################     10 ITERATIONS CHECK     #######################################################")
             print("Group: ", (i+1) / 10) #group per 10 iterations ie: 20th iteration is group 2
             print("Min Value: ", totalPopulation[min][1])
             print("Max Value: ", totalPopulation[max][1])
             print("Average Fitness Score: ", average)
-            print("############################################################################")
     end = time.time()
     print("Completion Time In Seconds: ", round(end-start, 3))
     max = findMinOrMax(len(newGeneration), 1, newGeneration)
