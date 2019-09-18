@@ -10,8 +10,13 @@ TO RUN
     there are various error checks as well ex: cannot enter letter for integer inputs
 
 OUTPUT
-1. After each 10 generations program displays the max, min and average fitness of the chromosomes in the population, IF the number of generations to run is > 10.
-2. Fittest chromosome for last generation.
+1. FITNESS for current generation.
+2. SELECTION: (EITHER ELITIST OR TOURNAMENT DEPENDING ON CHOICE) for current generation.
+3. CROSSOVER: (EITHER UNIFORM OR K-POINT DEPENDING ON CHOICE) for current generation.
+4. MUTATION for current generation.
+4. When that generation finishes and current mutation rate for that generation.
+5. 10 GENERATION ITERATIONS (only if its every 10). After each 10 generations program displays the max, min and average fitness of the chromosomes in the population, IF the number of generations to run is > 10.
+6. Fittest chromosome for last generation.
 
 DEBUG
 **Can accurately compute the fitness of a single chromosome**
