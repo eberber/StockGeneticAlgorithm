@@ -118,6 +118,7 @@ def kPoint(selectionList):
 #Once the new chromosomes have been created, you should iterate over each gene in each one of them and with a Z% probability, trigger a mutation
 def mutation(mutationProbability, newGeneration):
     lengthNewGenList = len(newGeneration)
+    print("BEFORE MUTATION: ", newGeneration)
     for i in range(lengthNewGenList):
         for j in range(5):
             chance = percentChance(mutationProbability)
@@ -161,7 +162,10 @@ def userInterface():
         numGerations = input()
         if (numGerations.isdigit()):
             numGerations = int(numGerations)
-            break
+            if numGerations < 1:
+                print("Must be at least 1 gen.\n")
+            else:
+                break
         else:
             print("Not an integer! Try again \n")    
 
@@ -170,8 +174,8 @@ def userInterface():
         populationSize = input()
         if (populationSize.isdigit()):
             populationSize = int(populationSize)
-            if(populationSize < 2):
-                print("Must have at least two chromosomes per generation.\n")
+            if(populationSize < 4):
+                print("Must have at least 4 chromosomes per generation.\n")
             else:
                 break
         else:
@@ -374,6 +378,7 @@ def fitnesScore(file, populationSize, populationUsingSelection, populationUsingC
 ###################          HELPER FUNCTIONS                #############################
 #determine what number of chromosomes for selection and crossover
 def generatePopulations(populationSize, percentSelection):
+    # we need at LEAST 2 chromosomes for selection and 1 for crossover
     percentSelection = percentSelection/100
     populationUsingSelection = math.ceil(populationSize * percentSelection)
     populationUsingCrossover = populationSize - populationUsingSelection
