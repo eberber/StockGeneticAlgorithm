@@ -10,22 +10,26 @@ def selection(populationUsingSelection, populationUsingCrossover, populationSize
     chromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
 
     if selectionAlgo == 0:
-        #print("Starting Elitist \n")
         selectionList = selectionSort(populationUsingSelection, scoredChromosomeList)
+        print("############################################     ELITIST OUTPUT     #######################################################")
+        printList(selectionList)
     elif selectionAlgo == 1:
-        #print("Starting Tournament \n")
         selectionList = tournamentSort(populationUsingSelection, scoredChromosomeList)
-
+        print("############################################     TOURNAMENT SORT OUTPUT     #######################################################")
+        printList(selectionList)
     if crossOverAlgo == 0:
-        #print("Starting Uniform \n")
         for x in range(populationUsingCrossover):
             chromosome = uniform(selectionList)
             selectionList.append(chromosome)
+        print("############################################     UNIFORM OUTPUT     #######################################################")
+        printList(selectionList)
     elif crossOverAlgo == 1:
         #print("Starting K-Point \n")
         for x in range(populationUsingCrossover):
             crossOverAlgo = kPoint(selectionList)
             selectionList.append(crossOverAlgo)
+        print("############################################     K-POINT OUTPUT     #######################################################")
+        printList(selectionList)
     return selectionList
 #randomly select two chromosomes from the current generation and whichever one has a higher fitness score will be copied
 #into the next generation. You do not need to prevent chromosomes from being selected more than once.
@@ -77,18 +81,11 @@ def uniform(selectionList):
 
     for i in range(5):
         chance = percentChance(50)
-        #stock days
-        if i != 4:
-            if chance == 0:
-                childList.append(selectionList[parent1][0][i])
-            elif chance == 1:
-                childList.append(selectionList[parent2][0][i])
-        #buy or sell
-        else:
-            if chance == 0:
-                childList.append(chance)
-            elif chance == 1:
-                childList.append(chance)
+        #fill child list based on 50/50 chance of 2 randomly chosen parents
+        if chance == 0:
+            childList.append(selectionList[parent1][0][i])
+        elif chance == 1:
+            childList.append(selectionList[parent2][0][i])
     #organize list    
     for j in range(2):
         if childList[j * 2] > childList[(j * 2) + 1]:
@@ -118,7 +115,6 @@ def kPoint(selectionList):
 #Once the new chromosomes have been created, you should iterate over each gene in each one of them and with a Z% probability, trigger a mutation
 def mutation(mutationProbability, newGeneration):
     lengthNewGenList = len(newGeneration)
-    print("BEFORE MUTATION: ", newGeneration)
     for i in range(lengthNewGenList):
         for j in range(5):
             chance = percentChance(mutationProbability)
@@ -142,6 +138,8 @@ def mutation(mutationProbability, newGeneration):
                 newGeneration[i][0][j * 2] = newGeneration[i][0][j * 2] - newGeneration[i][0][(j * 2) + 1]
             newGeneration[i][0][j * 2] = round(newGeneration[i][0][j * 2] , 2)
             newGeneration[i][0][(j * 2) + 1] = round(newGeneration[i][0][(j * 2) + 1] , 2)
+    print("############################################     MUTATION OUTPUT     #######################################################")
+    printList(newGeneration)
     return newGeneration
 ###################          INITIALIZATION                #############################
 def userInterface():    
@@ -252,15 +250,17 @@ def userInterface():
             pass
         else:
             mutationProbability += mutationRateChange
-        print("Generation: ", i, " Mutation Rate: ", mutationProbability)
+        print("############################################     EVERY GENERATION OUTPUT     #######################################################")
+        print("Generation: ", i, " COMPLETE \nMutation Rate: ", mutationProbability)
         totalPopulation.extend(newGeneration)
         checkEvery10Gens = (i+1) / 10
         if checkEvery10Gens % 1 == 0:
-            for j in totalPopulation:
-                print(j.chromosome , j.score)
+            #uncomment to see every chromosome in the current gen after all the steps
+            #for j in totalPopulation:
+             #   print(j.chromosome , j.score)
             min, max, average = findMinOrMax(len(totalPopulation), 2, totalPopulation)
             print("####################      10 ITERATIONS CHECK      ##############################")
-            print("Group: ", (i+1) / 10)
+            print("Group: ", (i+1) / 10) #group per 10 iterations ie: 20th iteration is group 2
             print("Min Value: ", totalPopulation[min][1])
             print("Max Value: ", totalPopulation[max][1])
             print("Average Fitness Score: ", average)
@@ -337,7 +337,7 @@ def validateStockData(noMatch, score, stockList = [], chromosome = []):
 def fitnesScore(file, populationSize, populationUsingSelection, populationUsingCrossover, selectionAlgo, crossOverAlgo):
     scoredChromosome = collections.namedtuple('scoredChromosome', 'chromosome score')
     scoredChromosomeList = []
-
+    #this loop creates n number of chromosomes based on number of chromsomes per generation
     for chromosomeNumber in range(populationSize):
         tempScore = 0.0
         score = 0.0
@@ -371,6 +371,10 @@ def fitnesScore(file, populationSize, populationUsingSelection, populationUsingC
         #print("       ####     FITNESS SCORE    ####\n                  ", score)
         #package chromosomes into list of tuples
         scoredChromosomeList.append(scoredChromosome(chromosome, score))
+    #this output shows the chromsome before selection, cross over and mutation which lets you verify that that fitness function works based on your data
+    print("############################################     FITNESS SCORES COMPUTED      #######################################################")
+    for i in scoredChromosomeList:
+        print("CHROMSOME BEFORE ANY CHANGES: ", i)
     #pass current generation and percent to be chosen
     scoredChromosomeList = selection(populationUsingSelection, populationUsingCrossover, populationSize, scoredChromosomeList, selectionAlgo, crossOverAlgo)
     return scoredChromosomeList
@@ -424,7 +428,9 @@ def findMinOrMax(stopValue, minOrMax=0, listBeingChecked=[]):
         return maxIndex
     elif minOrMax == 2:
         return minIndex, maxIndex, average
-
+def printList(listToPrint):
+    for i in listToPrint:
+        print(i)
 ###################          MAIN                #############################
 if __name__ == '__main__':
     userInterface()
