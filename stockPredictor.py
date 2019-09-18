@@ -184,8 +184,8 @@ def userInterface():
         percentSelection = input()
         if (percentSelection.isdigit()):
             percentSelection = int(percentSelection)
-            if percentSelection > 100 or percentSelection < 0:
-                print("Percent chose cannot be greater than 100% or less than 0%. \n")
+            if percentSelection > 90 or percentSelection < 10:
+                print("Percent chose cannot be greater than 90% or less than 10%. \n")
             else:
                 populationUsingSelection, populationUsingCrossover = generatePopulations(populationSize, percentSelection)
                 break
@@ -234,7 +234,7 @@ def userInterface():
         try:
             mutationRateChange = int(mutationRateChange)
             if mutationRateChange > 100:
-                print("Percent chose cannot be greater than 100%.\n")
+                print("Percent chosen cannot be greater than 100%.\n")
             else:
                 break
         except:
