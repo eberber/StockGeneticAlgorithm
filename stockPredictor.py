@@ -141,7 +141,7 @@ def mutation(mutationProbability, newGeneration):
     print("############################################     MUTATION OUTPUT     #######################################################")
     printList(newGeneration)
     return newGeneration
-###################          INITIALIZATION                #############################
+######################          INITIALIZATION                #############################
 def userInterface():    
     print("Hello! Welcome to the chromosome fitness testing lab!\n")
     while True:
